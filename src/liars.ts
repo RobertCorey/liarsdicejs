@@ -1,5 +1,3 @@
-import * as prompt from 'prompt';
-
 interface Player {
   id: number
   name: string
@@ -20,17 +18,30 @@ interface GamePlayer extends Player {
 
 interface Game extends Lobby {
   players: GamePlayer[]
-  round: number
+  rounds: Round[]
+  currentRoundIndex: number
   currentPlayerIndex: number
+  winners: GamePlayer[]
+  losers: GamePlayer[]
 }
 
 interface Settings {
   numberOfStartingDice: number
 }
 
+interface Round {
+  bids: Bid[]
+}
 interface Bid {
-  number: number;
-  face: number;
+  playerId: Player['id']
+  type: BidType
+  number: number
+  face: number
+}
+
+enum BidType {
+  liar,
+  call
 }
 
 const addPlayer = (lobby: Lobby, player: Player): Lobby => {
@@ -58,6 +69,28 @@ const dealDice = (player: Player, numberOfStartingDice: number): GamePlayer => {
   }
 }
 
+const getNumberOfDie = (game: Game, target: number) =>
+  game.players.flatMap(player => player.hand).filter(die => die === target).length
+
+const handleBid = (game: Game, bid: Bid): => {
+  if (game.players[game.currentPlayerIndex].id !== bid.playerId) {
+    throw new Error('Error: only the current player is allowed to bid')
+  }
+  if (bid.type === BidType.liar) {
+    return handleLiarBid(game, bid)
+  }
+
+  if (bid.type === BidType.call) {
+    return handleCallBid(game, bid)
+  }
+}
+
+const handleCallBid = (game: Game, bid: Bid) => {
+  return {...game, rounds: [...game.rounds, {}]}
+
+}
+const handleLiarBid = (game: Game, bid: Bid) => {}
+
 const getDefaultSettings = (): Settings => {
   return {
     numberOfStartingDice: 5
@@ -69,7 +102,10 @@ const startGame = (lobby: Lobby, settings: any = {}): Game => {
   return {
     ...lobby,
     players: lobby.players.map(player => dealDice(player, mergedSettings.numberOfStartingDice)),
-    round: 0,
+    winners: [],
+    losers: [],
+    rounds: [{ bids: [] }],
+    currentRoundIndex: 0,
     currentPlayerIndex: Math.floor(Math.random() * lobby.players.length)
   }
 }
@@ -82,4 +118,4 @@ let players: Player[] = [
 let lobby = { id: 1, players: [] }
 
 let game = startGame(addPlayers(lobby, players), {})
-console.log("Game: %j", game);
+console.log('Game: %j', game)
