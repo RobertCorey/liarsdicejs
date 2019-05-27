@@ -124,23 +124,23 @@ export class Game {
     if (!this.isFaceValid(bid.face)) {
       throw new Error(`That face doesn't exist in ${this.validFaces.toString()}`)
     }
-    let currentBid = this.getCurrentBid()
-    if (currentBid) {
-      if (bid.quantity > currentBid.quantity) return true
-
-      if (bid.quantity === currentBid.quantity) {
-        if (this.doesATrumpB(currentBid.face, bid.face) >= 0) {
-          throw new Error(`If the quantity of dice is the same, the face must be higher`)
+    if (this.bids.length > 0) {
+      let currentBid = this.getCurrentBid()
+      if (currentBid) {
+        if (bid.quantity === currentBid.quantity) {
+          if (this.doesATrumpB(currentBid.face, bid.face) >= 0) {
+            throw new Error(`If the quantity of dice is the same, the face must be higher`)
+          }
         }
-      }
-      if (bid.face === currentBid.face) {
-        if (bid.quantity <= currentBid.quantity) {
-          throw new Error(
-            `If the face of the dice is the same as the last bid, the quantity must be higher`
-          )
+        if (bid.face === currentBid.face) {
+          if (bid.quantity <= currentBid.quantity) {
+            throw new Error(
+              `If the face of the dice is the same as the last bid, the quantity must be higher`
+            )
+          }
         }
+        return true
       }
-      return true
     }
   }
   callLiar() {
@@ -208,9 +208,9 @@ let game = new Game(1, {})
 game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Tom' }])
 game.startGame()
 game.makeBid({ quantity: 1, face: 2 })
-game.makeBid({ quantity: 1, face: 2 })
+game.makeBid({ quantity: 2, face: 2 })
 // game.makeBid({ quantity: 1, face: 2 })
 // console.log(game.bids)
-game.printGameState()
+// game.printGameState()
 
 // console.log('result: %j', game.getNumberOfDie(3))
