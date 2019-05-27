@@ -125,24 +125,30 @@ export class Game {
       throw new Error(`That face doesn't exist in ${this.validFaces.toString()}`)
     }
     if (this.bids.length > 0) {
-      let currentBid = this.getCurrentBid()
-      if (currentBid) {
-        if (bid.quantity === currentBid.quantity) {
-          if (this.doesATrumpB(currentBid.face, bid.face) >= 0) {
-            throw new Error(`If the quantity of dice is the same, the face must be higher`)
-          }
-        }
-        if (bid.face === currentBid.face) {
-          if (bid.quantity <= currentBid.quantity) {
-            throw new Error(
-              `If the face of the dice is the same as the last bid, the quantity must be higher`
-            )
-          }
-        }
-        return true
-      }
+      this.validatePotentialBidAgainstCurrent(bid, this.getCurrentBid())
     }
   }
+
+  validatePotentialBidAgainstCurrent(potentialBid: Bid, currentBid: Bid) {
+    if (potentialBid.quantity === currentBid.quantity) {
+      if (this.doesATrumpB(potentialBid.face, currentBid.face) <= 0) {
+        throw new Error(`If the quantity of dice is the same, the face must be higher`)
+      }
+    }
+    if (potentialBid.face === currentBid.face) {
+      if (potentialBid.quantity <= currentBid.quantity) {
+        throw new Error(
+          `If the face of the dice is the same as the last bid, the quantity must be higher`
+        )
+      }
+    }
+    if (potentialBid.face > currentBid.face && potentialBid.quantity < currentBid.quantity) {
+      throw new Error(
+        `If the face of the die is greater than the last bid, the quantity must be greater than or the same`
+      )
+    }
+  }
+
   callLiar() {
     try {
       const currentBid = this.getCurrentBid()
@@ -207,8 +213,10 @@ export class Game {
 let game = new Game(1, {})
 game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Tom' }])
 game.startGame()
-game.makeBid({ quantity: 1, face: 2 })
-game.makeBid({ quantity: 2, face: 2 })
+// game.makeBid({ quantity: 1, face: 2 })
+game.makeBid({ quantity: 6, face: 2 })
+game.makeBid({ quantity: 6, face: 2 })
+// game.makeBid({ quantity: 2, face: 6 })
 // game.makeBid({ quantity: 1, face: 2 })
 // console.log(game.bids)
 // game.printGameState()
