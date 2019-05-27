@@ -163,6 +163,7 @@ export class Game {
         this.handleLessThan()
       }
       this.removeWinners()
+      console.log(this.players)
       if (this.isEndGame()) {
         this.handleEndGame()
       }
@@ -194,7 +195,7 @@ export class Game {
 
   removeWinners() {
     this.winners = [...this.winners, ...this.players.filter(player => player.hand.length === 0)]
-    this.players = [...this.players, ...this.players.filter(player => player.hand.length !== 0)]
+    this.players = [...this.players.filter(player => player.hand.length !== 0)]
   }
 
   isEndGame() {
@@ -215,10 +216,11 @@ game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Tom' }])
 game.startGame()
 // game.makeBid({ quantity: 1, face: 2 })
 game.makeBid({ quantity: 6, face: 2 })
-game.makeBid({ quantity: 6, face: 2 })
+game.makeBid({ quantity: 10, face: 2 })
+game.callLiar()
+// game.printGameState()
 // game.makeBid({ quantity: 2, face: 6 })
 // game.makeBid({ quantity: 1, face: 2 })
 // console.log(game.bids)
-// game.printGameState()
 
 // console.log('result: %j', game.getNumberOfDie(3))
