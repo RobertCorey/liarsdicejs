@@ -15,15 +15,15 @@ interface Settings {
 }
 
 interface Bid {
-  value: number
-  number: number
+  face: number
+  quantity: number
 }
 
 interface PlayerBid extends Bid {
   playerId: Player['id']
 }
 
-class Game {
+export class Game {
   players: GamePlayer[] = []
   roundHistory = []
   bids: PlayerBid[] = []
@@ -34,6 +34,7 @@ class Game {
     numberOfStartingDice: 5
   }
   settings: Settings
+  validFaces: number[] = [1, 2, 3, 4, 5, 6]
 
   constructor(public id: number, private userSettings: UserSettings) {
     this.settings = { ...this.defaultSettings, ...userSettings }
@@ -84,31 +85,83 @@ class Game {
   }
 
   getCurrentBid() {
-    return this.bids[this.bids.length - 1]
+    if (this.bids.length > 0) {
+      return this.bids[this.bids.length - 1]
+    }
+    throw new Error(`Current Bid Doesn't exist`)
   }
 
   convertBidToPlayerBid(bid: Bid): PlayerBid {
     return { ...bid, playerId: this.getCurrentPlayer().id }
   }
-  makeBid(bid: Bid) {
-    this.bids = [...this.bids, this.convertBidToPlayerBid(bid)]
+
+  getNextPlayer() {
+    return (this.currentPlayerIndex + 1) % this.players.length
   }
 
+  makeBid(bid: Bid) {
+    try {
+      this.validateBid(bid)
+      this.bids = [...this.bids, this.convertBidToPlayerBid(bid)]
+      this.currentPlayerIndex = this.getNextPlayer()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  doesATrumpB(a: number, b: number) {
+    if (a === b) return 0
+    if (a === 1) return 1
+    if (a > b) return 1
+    return -1
+  }
+
+  isFaceValid(face: number) {
+    return this.validFaces.includes(face)
+  }
+
+  validateBid(bid: Bid) {
+    if (!this.isFaceValid(bid.face)) {
+      throw new Error(`That face doesn't exist in ${this.validFaces.toString()}`)
+    }
+    let currentBid = this.getCurrentBid()
+    if (currentBid) {
+      if (bid.quantity > currentBid.quantity) return true
+
+      if (bid.quantity === currentBid.quantity) {
+        if (this.doesATrumpB(currentBid.face, bid.face) >= 0) {
+          throw new Error(`If the quantity of dice is the same, the face must be higher`)
+        }
+      }
+      if (bid.face === currentBid.face) {
+        if (bid.quantity <= currentBid.quantity) {
+          throw new Error(
+            `If the face of the dice is the same as the last bid, the quantity must be higher`
+          )
+        }
+      }
+      return true
+    }
+  }
   callLiar() {
-    const currentBid = this.bids[this.bids.length - 1]
-    const actualNumberOfDie = this.getNumberOfDie(currentBid.value)
-    if (currentBid.number === actualNumberOfDie) {
-      this.handleSpotOn()
-    }
-    if (currentBid.number > actualNumberOfDie) {
-      this.handleGreaterThan()
-    }
-    if (currentBid.number < actualNumberOfDie) {
-      this.handleLessThan()
-    }
-    this.removeWinners()
-    if (this.isEndGame()) {
-      this.handleEndGame()
+    try {
+      const currentBid = this.getCurrentBid()
+      const actualNumberOfDie = this.getNumberOfDie(currentBid.face)
+      if (currentBid.quantity === actualNumberOfDie) {
+        this.handleSpotOn()
+      }
+      if (currentBid.quantity > actualNumberOfDie) {
+        this.handleGreaterThan()
+      }
+      if (currentBid.quantity < actualNumberOfDie) {
+        this.handleLessThan()
+      }
+      this.removeWinners()
+      if (this.isEndGame()) {
+        this.handleEndGame()
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -146,14 +199,18 @@ class Game {
     this.losers = this.players
     this.players = []
   }
-}
 
+  printGameState() {
+    console.log(this)
+  }
+}
 let game = new Game(1, {})
 game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Tom' }])
 game.startGame()
+game.makeBid({ quantity: 1, face: 2 })
+game.makeBid({ quantity: 1, face: 2 })
+// game.makeBid({ quantity: 1, face: 2 })
+// console.log(game.bids)
+game.printGameState()
 
-console.log('result: %j', game.getNumberOfDie(3))
-
-// let game = startGame(addPlayers(lobby, players), {})
-// let result = {}
-// console.log('result: %j', result)
+// console.log('result: %j', game.getNumberOfDie(3))
