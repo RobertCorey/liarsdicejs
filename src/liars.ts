@@ -163,7 +163,6 @@ export class Game {
         this.handleLessThan()
       }
       this.removeWinners()
-      console.log(this.players)
       if (this.isEndGame()) {
         this.handleEndGame()
       }
@@ -188,6 +187,8 @@ export class Game {
     return this.players.map(player => {
       if (player.id !== excludedPlayerId) {
         player.hand = this.generateHand(player.hand.length - 1)
+      } else {
+        player.hand = this.generateHand(player.hand.length)
       }
       return player
     })
@@ -212,7 +213,7 @@ export class Game {
   }
 }
 let game = new Game(1, {})
-game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Tom' }])
+game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Lela' }])
 game.startGame()
 // game.makeBid({ quantity: 1, face: 2 })
 game.makeBid({ quantity: 6, face: 2 })
