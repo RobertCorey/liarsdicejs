@@ -25,7 +25,7 @@ interface PlayerBid extends Bid {
 
 export class Game {
   players: GamePlayer[] = []
-  roundHistory = []
+  roundHistory: PlayerBid[][] = []
   bids: PlayerBid[] = []
   currentPlayerIndex: number = -1
   winners: GamePlayer[] = []
@@ -166,6 +166,7 @@ export class Game {
       if (this.isEndGame()) {
         this.handleEndGame()
       }
+      this.startNewRound()
     } catch (error) {
       console.log(error)
     }
@@ -206,6 +207,11 @@ export class Game {
   handleEndGame() {
     this.losers = this.players
     this.players = []
+  }
+  //TODO: make sure we are handling who the first to act is next round
+  startNewRound() {
+    this.roundHistory = [...this.roundHistory, this.bids]
+    this.bids = []
   }
 
   printGameState() {
