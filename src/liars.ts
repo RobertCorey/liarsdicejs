@@ -148,9 +148,15 @@ export class Game {
       )
     }
   }
+  validateLiarCall() {
+    if (this.bids.length < 1) {
+      throw new Error(`You can't call 'liar' if there are no previous bids`)
+    }
+  }
 
   callLiar() {
     try {
+      this.validateLiarCall()
       const currentBid = this.getCurrentBid()
       const actualNumberOfDie = this.getNumberOfDie(currentBid.face)
       if (currentBid.quantity === actualNumberOfDie) {
