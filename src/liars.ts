@@ -84,6 +84,15 @@ export class Game {
     return this.players[this.currentPlayerIndex]
   }
 
+  setCurrentPlayer(playerId: Player['id']) {
+    const index = this.players.findIndex(player => player.id === playerId)
+    if (index < 0) {
+      throw new Error('Player not Found')
+    } else {
+      this.currentPlayerIndex = index
+    }
+  }
+
   getCurrentBid() {
     if (this.bids.length > 0) {
       return this.bids[this.bids.length - 1]
@@ -183,11 +192,13 @@ export class Game {
   }
 
   handleLessThan() {
-    this.players = this.removeDice(this.getCurrentPlayer().id)
+    const loserId = this.getCurrentPlayer().id
+    this.players = this.removeDice(loserId)
   }
 
   handleGreaterThan() {
-    this.players = this.removeDice(this.getCurrentBid().playerId)
+    const loserId = this.getCurrentBid().playerId
+    this.players = this.removeDice(loserId)
   }
 
   private removeDice(excludedPlayerId: number): GamePlayer[] {
@@ -214,7 +225,7 @@ export class Game {
     this.losers = this.players
     this.players = []
   }
-  //TODO: make sure we are handling who the first to act is next round
+  // TODO: make sure we are handling who the first to act is next round
   startNewRound() {
     this.roundHistory = [...this.roundHistory, this.bids]
     this.bids = []
