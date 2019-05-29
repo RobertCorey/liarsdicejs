@@ -1,4 +1,5 @@
 import { mockLobby, mockPlayers } from './mocks'
+import { Logger } from './logger'
 interface Player {
   id: number
   name: string
@@ -23,30 +24,42 @@ interface PlayerBid extends Bid {
   playerId: Player['id']
 }
 
-export class Game {
+enum GameState {
+  'Open',
+  'In Progress',
+  'Closed'
+}
+
+export class Liars {
   players: GamePlayer[] = []
   roundHistory: PlayerBid[][] = []
   bids: PlayerBid[] = []
   currentPlayerIndex: number = -1
   winners: GamePlayer[] = []
   losers: GamePlayer[] = []
+  gameState: GameState = GameState.Open
   defaultSettings: Settings = {
     numberOfStartingDice: 5
   }
   settings: Settings
   validFaces: number[] = [1, 2, 3, 4, 5, 6]
+  logger: Logger = new Logger()
 
   constructor(public id: number, private userSettings: UserSettings) {
     this.settings = { ...this.defaultSettings, ...userSettings }
   }
-
-  print() {
-    console.log(JSON.stringify(this, null, 2))
+  logStateGame() {
+    this.logger.addLog({
+      log: [`Liars Dice Game # ${this.id} started at ${new Date()}`]
+    })
   }
-
   startGame() {
     this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
     this.dealDice(this.settings.numberOfStartingDice)
+  }
+
+  get gameStateText() {
+    return Object.values(GameState)[this.gameState]
   }
 
   private dealDice(numberOfStartingDice: number) {
@@ -113,8 +126,9 @@ export class Game {
       this.validateBid(bid)
       this.bids = [...this.bids, this.convertBidToPlayerBid(bid)]
       this.currentPlayerIndex = this.getNextPlayer()
+      return true
     } catch (error) {
-      console.log(error)
+      return error
     }
   }
 
@@ -182,8 +196,9 @@ export class Game {
         this.handleEndGame()
       }
       this.startNewRound()
+      return true
     } catch (error) {
-      console.log(error)
+      return error
     }
   }
 
@@ -230,18 +245,23 @@ export class Game {
     this.roundHistory = [...this.roundHistory, this.bids]
     this.bids = []
   }
-
+  get round() {
+    return this.roundHistory.length
+  }
   printGameState() {
     console.log(this)
   }
 }
-let game = new Game(1, {})
-game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Lela' }])
-game.startGame()
-// game.makeBid({ quantity: 1, face: 2 })
-game.makeBid({ quantity: 6, face: 2 })
-game.makeBid({ quantity: 10, face: 2 })
-game.callLiar()
+let game = new Liars(1, {})
+// game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Lela' }])
+// game.startGame()
+// console.log(game.players[0])
+// game.printGameState()
+// game.makeBid({ quantity: 2, face: 3 })
+// game.makeBid({ quantity: 2, face: 3 })
+// game.makeBid({ quantity: 10, face: 2 })
+// console.log(game.players)
+// console.log(game.players)
 // game.printGameState()
 // game.makeBid({ quantity: 2, face: 6 })
 // game.makeBid({ quantity: 1, face: 2 })
