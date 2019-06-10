@@ -8,7 +8,10 @@ describe('Dummy test', () => {
   })
 })
 describe('Liars: it instantiates', () => {
-  let game = new Liars(1, {})
+  let game: Liars
+  beforeEach(() => {
+    game = new Liars(1, {})
+  })
   it('should instantiate', () => {
     expect(game instanceof Liars).toBeTruthy()
   })
