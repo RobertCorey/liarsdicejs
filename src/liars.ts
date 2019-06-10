@@ -1,4 +1,4 @@
-import { mockLobby, mockPlayers } from './mocks'
+import { mockLobby, mockPlayers } from '../test/mocks'
 import { Logger } from './logger'
 interface Player {
   id: number
