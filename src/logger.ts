@@ -1,8 +1,8 @@
-interface Log {
+export interface Log {
   log: string[]
 }
 
-interface LogWithTimestamp extends Log {
+export interface LogWithTimestamp extends Log {
   timestamp: number
 }
 
