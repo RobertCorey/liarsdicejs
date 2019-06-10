@@ -48,14 +48,25 @@ export class Liars {
   constructor(public id: number, private userSettings: UserSettings) {
     this.settings = { ...this.defaultSettings, ...userSettings }
   }
-  logStateGame() {
-    this.logger.addLog({
-      log: [`Liars Dice Game # ${this.id} started at ${new Date()}`]
-    })
-  }
+
   startGame() {
     this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
     this.dealDice(this.settings.numberOfStartingDice)
+    this.logRoundState()
+  }
+
+  logRoundState() {
+    let messages = [
+      `There are ${this.totalNumberOfDice} dice left in the game`,
+      ...this.players.map(player => {
+        return `${player.name} has ${player.hand.length} dice remaining`
+      }),
+      ...this.bids.map(bid => {
+        const player = this.getPlayerById(bid.playerId)
+        return `${player && player.name} bid ${bid.quantity},${bid.face}`
+      })
+    ]
+    this.logger.addLogs(messages)
   }
 
   get gameStateText() {
@@ -72,9 +83,15 @@ export class Liars {
   private generateHand(numberOfDice: number) {
     return new Array(numberOfDice).fill(undefined).map(() => Math.floor(Math.random() * 6) + 1)
   }
+  get allDice() {
+    return this.players.flatMap(player => player.hand)
+  }
 
-  getNumberOfDie(target: number) {
-    return this.players.flatMap(player => player.hand).filter(die => die === target).length
+  get totalNumberOfDice() {
+    return this.allDice.length
+  }
+  getNumberOfDiceWithFace(target: number) {
+    return this.allDice.filter(die => die === target).length
   }
 
   private convertPlayerToGamePlayer(player: Player) {
@@ -117,6 +134,10 @@ export class Liars {
     return { ...bid, playerId: this.getCurrentPlayer().id }
   }
 
+  getPlayerById(id: Player['id']) {
+    return this.players.find(player => player.id === id)
+  }
+
   getNextPlayer() {
     return (this.currentPlayerIndex + 1) % this.players.length
   }
@@ -125,6 +146,7 @@ export class Liars {
     try {
       this.validateBid(bid)
       this.bids = [...this.bids, this.convertBidToPlayerBid(bid)]
+      this.logRoundState()
       this.currentPlayerIndex = this.getNextPlayer()
       return true
     } catch (error) {
@@ -181,7 +203,7 @@ export class Liars {
     try {
       this.validateLiarCall()
       const currentBid = this.getCurrentBid()
-      const actualNumberOfDie = this.getNumberOfDie(currentBid.face)
+      const actualNumberOfDie = this.getNumberOfDiceWithFace(currentBid.face)
       if (currentBid.quantity === actualNumberOfDie) {
         this.handleSpotOn()
       }
@@ -253,13 +275,14 @@ export class Liars {
   }
 }
 let game = new Liars(1, {})
-// game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Lela' }])
-// game.startGame()
+game.addPlayers([{ id: 1, name: 'Rob' }, { id: 2, name: 'Lela' }])
+game.startGame()
 // console.log(game.players[0])
 // game.printGameState()
-// game.makeBid({ quantity: 2, face: 3 })
-// game.makeBid({ quantity: 2, face: 3 })
-// game.makeBid({ quantity: 10, face: 2 })
+game.makeBid({ quantity: 2, face: 3 })
+game.makeBid({ quantity: 2, face: 3 })
+game.makeBid({ quantity: 10, face: 2 })
+game.logger.printAll()
 // console.log(game.players)
 // console.log(game.players)
 // game.printGameState()
