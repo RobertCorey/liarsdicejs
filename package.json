@@ -5,7 +5,7 @@
   "keywords": [],
   "main": "dist/liars.umd.js",
   "module": "dist/liars.es5.js",
-  "typings": "dist/types/liars.d.ts",
+  "typings": "dist/types/src/liars.d.ts",
   "files": [
     "dist"
   ],
