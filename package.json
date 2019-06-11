@@ -1,6 +1,6 @@
 {
-  "name": "liars",
-  "version": "0.0.0",
+  "name": "liarsdicejs",
+  "version": "1.0.0",
   "description": "",
   "keywords": [],
   "main": "dist/liars.umd.js",
