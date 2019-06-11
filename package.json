@@ -12,7 +12,7 @@
   "author": "Rob Corey <robertbcorey@gmail.com>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/RobertCorey/liarsdicejs"
   },
   "license": "MIT",
   "engines": {
